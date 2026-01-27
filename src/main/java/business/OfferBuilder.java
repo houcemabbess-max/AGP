@@ -1,129 +1,243 @@
 package business;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 /**
- * OfferBuilder = classe de la couche Business qui CONSTRUIT une Offer automatiquement
- * en appliquant des règles métier (budget, max 3 sites/jour, durée max/jour, préférences).
+ * OfferBuilder (Business) :
+ * Construit automatiquement une Offer à partir d'un catalogue (hotels + sites),
+ * en appliquant des règles métier :
+ *  - Budget max global
+ *  - Nombre de jours
+ *  - Max de sites par jour
+ *  - Max d'heures par jour
+ *  - Choix du transport via TransportSelector (géré par Spring)
  *
- * Idée : ce n'est pas "si/alors" simple :
- * - on calcule un score pour choisir hôtel + sites
- * - on respecte des contraintes (budget/temps)
- * - on choisit le transport en comparant plusieurs options (via TransportSelector)
+ * IMPORTANT (Spring) :
+ * - @Component : Spring crée et gère l'objet OfferBuilder
+ * - @Scope("prototype") : chaque getBean() renvoie un builder "neuf"
+ *   (car OfferBuilder contient de l'état: nbDays, budgetMax, catalogue, etc.)
  */
+@Component
+@Scope("prototype")
 public class OfferBuilder {
 
-    // Données disponibles (catalogue)
-    private final List<Hotel> availableHotels;
-    private final List<Site> availableSites;
+    // ----------------------------
+    // Dépendances Spring (IoC)
+    // ----------------------------
 
-    // Paramètres de construction
-    private int nbDays = 1;
-    private double budgetMax = Double.MAX_VALUE;
-    private int maxSitesPerDay = 3;
-    private double maxHoursPerDay = 8.0;
+    /**
+     * Dépendance métier "complexe" : choisir un transport selon distance/budget.
+     * Injectée par Spring (pas de new TransportSelector()).
+     */
+    private final TransportSelector transportSelector;
 
-    // Préférences simples (optionnelles)
-    private final Set<TypeSite> preferredTypes = new HashSet<>();
-    private boolean prioritizeCheap = true; // si true => on favorise les sites pas chers
-
-    // Pondérations (score) : tu peux ajuster si ton prof veut “plus complexe”
-    private double wType = 30.0;     // bonus si type préféré
-    private double wDistance = 10.0; // pénalité distance
-    private double wEntry = 2.0;     // pénalité prix d’entrée
-    private double wDuration = 1.5;  // pénalité durée visite
-
-    public OfferBuilder(List<Hotel> hotels, List<Site> sites) {
-        this.availableHotels = hotels != null ? hotels : new ArrayList<>();
-        this.availableSites = sites != null ? sites : new ArrayList<>();
+    /**
+     * Injection par constructeur : Spring fournit automatiquement TransportSelector.
+     */
+    @Autowired
+    public OfferBuilder(TransportSelector transportSelector) {
+        this.transportSelector = transportSelector;
     }
 
-    // --- Fluent setters (optionnels mais pratiques)
+    // ----------------------------
+    // Catalogue (données d'entrée)
+    // ----------------------------
+
+    /**
+     * Hôtels disponibles pour construire l'offre (catalogue).
+     * Remplis via withCatalog(...).
+     */
+    private List<Hotel> availableHotels = new ArrayList<>();
+
+    /**
+     * Sites disponibles pour construire les excursions (catalogue).
+     * Remplis via withCatalog(...).
+     */
+    private List<Site> availableSites = new ArrayList<>();
+
+    // ----------------------------
+    // Paramètres de construction (règles)
+    // ----------------------------
+
+    /** Nombre de jours du séjour (>= 1). */
+    private int nbDays = 1;
+
+    /** Budget maximum total autorisé. */
+    private double budgetMax = Double.MAX_VALUE;
+
+    /** Nombre maximum de sites visités par jour. */
+    private int maxSitesPerDay = 3;
+
+    /** Durée maximale (heures) de visite/transport par jour. */
+    private double maxHoursPerDay = 8.0;
+
+    // ----------------------------
+    // Préférences (optionnelles)
+    // ----------------------------
+
+    /**
+     * Types de sites préférés (optionnel).
+     * Tu peux l'utiliser si tu veux un scoring plus "intelligent".
+     * (Ici on garde simple, mais c'est prêt.)
+     */
+    private final Set<TypeSite> preferredTypes = new HashSet<>();
+
+    /**
+     * Si true, on pénalise davantage les sites chers (entryPrice).
+     */
+    private boolean prioritizeCheap = true;
+
+    // ----------------------------
+    // Pondérations (scoring)
+    // ----------------------------
+
+    /** Bonus (ou pénalité) sur le type préféré (optionnel). */
+    private double wType = 30.0;
+
+    /** Pénalité liée à la distance. */
+    private double wDistance = 10.0;
+
+    /** Pénalité liée au prix d'entrée. */
+    private double wEntry = 2.0;
+
+    /** Pénalité liée à la durée de visite. */
+    private double wDuration = 1.5;
+
+    // ----------------------------
+    // "Fluent API" : configuration
+    // ----------------------------
+
+    /**
+     * Donne le catalogue au builder : indispensable avant build().
+     */
+    public OfferBuilder withCatalog(List<Hotel> hotels, List<Site> sites) {
+        this.availableHotels = (hotels != null) ? hotels : new ArrayList<>();
+        this.availableSites = (sites != null) ? sites : new ArrayList<>();
+        return this;
+    }
+
+    /**
+     * Fixe le nombre de jours (>= 1).
+     */
     public OfferBuilder withNbDays(int nbDays) {
         this.nbDays = Math.max(1, nbDays);
         return this;
     }
 
+    /**
+     * Fixe le budget max (>= 0).
+     */
     public OfferBuilder withBudgetMax(double budgetMax) {
-        this.budgetMax = budgetMax > 0 ? budgetMax : 0;
+        this.budgetMax = Math.max(0, budgetMax);
         return this;
     }
 
+    /**
+     * Fixe le nombre max de sites par jour (>= 1).
+     */
     public OfferBuilder withMaxSitesPerDay(int max) {
         this.maxSitesPerDay = Math.max(1, max);
         return this;
     }
 
+    /**
+     * Fixe la durée max par jour (>= 1.0).
+     */
     public OfferBuilder withMaxHoursPerDay(double hours) {
         this.maxHoursPerDay = Math.max(1.0, hours);
         return this;
     }
 
-    public OfferBuilder preferTypes(TypeSite... types) {
-        if (types != null) {
-            for (TypeSite t : types) {
-                if (t != null) preferredTypes.add(t);
-            }
-        }
-        return this;
-    }
-
+    /**
+     * Active/désactive la préférence "pas cher".
+     */
     public OfferBuilder prioritizeCheap(boolean value) {
         this.prioritizeCheap = value;
         return this;
     }
 
+    // ----------------------------
+    // Construction principale
+    // ----------------------------
+
     /**
-     * Construit l'offre :
-     * 1) Choisir un hôtel (score hôtel)
-     * 2) Pour chaque jour : construire une excursion (max 3 sites + maxHoursPerDay + budget)
-     * 3) Retourner l'Offer finale
+     * Construit l'offre complète :
+     * 1) choisit un hôtel
+     * 2) calcule budget restant
+     * 3) pour chaque jour : crée une excursion et choisit des sites faisables
+     * 4) choisit un transport pour chaque étape (via TransportSelector)
+     * 5) ajoute excursions à l'Offer
      */
     public Offer build() {
+        // Sécurité : impossible de construire sans hôtels
         if (availableHotels.isEmpty()) {
             throw new IllegalStateException("Aucun hotel disponible pour construire une offre.");
         }
 
+        // 1) Créer l'offre
         Offer offer = new Offer(nbDays);
 
-        // 1) Choix hôtel (un seul hôtel dans ton modèle actuel)
+        // 2) Choisir et ajouter l'hôtel
         Hotel chosenHotel = chooseBestHotel();
         offer.addHotel(chosenHotel);
 
-        // Budget restant après hôtel
+        // 3) Budget restant après paiement de l'hôtel sur nbDays
         double remainingBudget = budgetMax - (chosenHotel.getPricePerDay() * nbDays);
 
-        // 2) Excursions jour par jour
-        Set<Integer> usedSiteIds = new HashSet<>(); // pour éviter de revisiter le même site (optionnel)
+        // Pour éviter de choisir 2 fois le même site (optionnel mais propre)
+        Set<Integer> usedSiteIds = new HashSet<>();
 
+        // 4) Construire une excursion par jour
         for (int day = 1; day <= nbDays; day++) {
-            if (remainingBudget <= 0) break;
+            if (remainingBudget <= 0) break; // plus de budget => stop
 
+            // Excursion commence toujours à l'hôtel
             Excursion excursion = new Excursion(chosenHotel);
 
+            // Point de départ courant (au début = hôtel)
             Coordinates currentPoint = chosenHotel.getCoordinates();
+
+            // Temps déjà consommé sur la journée
             double dayHours = 0.0;
+
+            // Nombre de sites déjà ajoutés ce jour
             int count = 0;
 
+            // 5) Ajouter jusqu'à maxSitesPerDay sites faisables
             while (count < maxSitesPerDay) {
-                // Choisir le meilleur site restant selon score + contraintes
-                Site next = chooseBestNextSite(currentPoint, remainingBudget, (maxHoursPerDay - dayHours), usedSiteIds);
 
-                if (next == null) break; // rien de faisable
+                // Choisir le meilleur site faisable selon budget/temps + score
+                Site next = chooseBestNextSite(
+                        currentPoint,
+                        remainingBudget,
+                        (maxHoursPerDay - dayHours),
+                        usedSiteIds
+                );
 
-                // Choix transport (comparaison Bus/Foot/Boat) selon coût + temps sous budget
-                Transport transport = TransportSelector.chooseTransport(currentPoint, next.getCoordinates(), remainingBudget);
+                if (next == null) break; // aucun site faisable => stop pour ce jour
+
+                // Choisir transport optimal (comparaison Bus/Foot/Boat...)
+                Transport transport = transportSelector.chooseTransport(
+                        currentPoint,
+                        next.getCoordinates(),
+                        remainingBudget
+                );
+
                 if (transport == null) break;
 
+                // Créer l'étape (départ -> site + transport)
                 VisitStep step = new VisitStep(currentPoint, next, transport);
 
-                // Vérifier contraintes (budget + temps)
+                // Vérifier contraintes budget/temps réelles (après création step)
                 if (step.getTotalCost() > remainingBudget) {
-                    usedSiteIds.add(next.getId()); // on le marque comme “pas possible” dans ce contexte
+                    usedSiteIds.add(next.getId()); // marque comme pas faisable dans ce contexte
                     continue;
                 }
                 if (dayHours + step.getTotalDuration() > maxHoursPerDay) {
@@ -131,17 +245,21 @@ public class OfferBuilder {
                     continue;
                 }
 
-                // Ajouter l'étape
+                // Ajouter l'étape à l'excursion
                 excursion.addStep(step);
+
+                // Marquer le site comme utilisé
                 usedSiteIds.add(next.getId());
 
+                // Mettre à jour budget / temps / position
                 remainingBudget -= step.getTotalCost();
                 dayHours += step.getTotalDuration();
                 currentPoint = next.getCoordinates();
+
                 count++;
             }
 
-            // Ajouter excursion seulement si elle contient au moins 1 visite
+            // Ajouter excursion seulement si elle contient au moins une étape
             if (!excursion.getSteps().isEmpty()) {
                 offer.addExcursion(excursion);
             }
@@ -151,42 +269,36 @@ public class OfferBuilder {
     }
 
     // ----------------------------
-    // Choix de l'hôtel (score)
+    // Choix de l'hôtel
     // ----------------------------
+
+    /**
+     * Choisit l'hôtel "le meilleur" selon une règle simple.
+     * Ici : le moins cher.
+     * (Tu peux remplacer par un vrai score si tu veux.)
+     */
     private Hotel chooseBestHotel() {
-        // Score simple “un peu intelligent” :
-        // - favoriser prix/jour bas
-        // - favoriser stars élevés
-        // - favoriser position "centrale" (proche des sites en moyenne)
-        return availableHotels.stream()
-                .max(Comparator.comparingDouble(this::hotelScore))
-                .orElseThrow(() -> new IllegalStateException("Impossible de choisir un hotel."));
-    }
-
-    private double hotelScore(Hotel h) {
-        double price = h.getPricePerDay();
-        int stars = h.getStars();
-
-        // centralité = moyenne des distances aux sites (plus petit = mieux)
-        double avgDist = averageDistanceToSites(h.getCoordinates());
-
-        // Score : étoiles (bonus) - prix (pénalité) - distance moyenne (pénalité)
-        // (tu peux ajuster les poids)
-        return (stars * 20.0) - (price * 0.5) - (avgDist * 10.0);
-    }
-
-    private double averageDistanceToSites(Coordinates hotelCoord) {
-        if (availableSites.isEmpty()) return 0.0;
-        double sum = 0.0;
-        for (Site s : availableSites) {
-            sum += GeoUtils.distance(hotelCoord, s.getCoordinates());
+        Hotel best = availableHotels.get(0);
+        for (Hotel h : availableHotels) {
+            if (h.getPricePerDay() < best.getPricePerDay()) {
+                best = h;
+            }
         }
-        return sum / availableSites.size();
+        return best;
     }
 
-    // ---------------------------------------
-    // Choix du prochain site (score + filtre)
-    // ---------------------------------------
+    // ----------------------------
+    // Choix des sites
+    // ----------------------------
+
+    /**
+     * Choisit le meilleur prochain site en respectant :
+     * - pas déjà visité (usedSiteIds)
+     * - entryPrice <= budget restant
+     * - duration <= heures restantes
+     *
+     * Puis on utilise un score (plus petit = meilleur).
+     */
     private Site chooseBestNextSite(
             Coordinates from,
             double remainingBudget,
@@ -194,25 +306,24 @@ public class OfferBuilder {
             Set<Integer> usedSiteIds
     ) {
         Site best = null;
-        double bestScore = -Double.MAX_VALUE;
+        double bestScore = Double.MAX_VALUE;
 
         for (Site s : availableSites) {
             if (usedSiteIds.contains(s.getId())) continue;
 
-            // Filtrage simple : si le prix d'entrée dépasse déjà le budget restant => pas possible
+            // contraintes basiques
             if (s.getEntryPrice() > remainingBudget) continue;
-
-            // Estimer au minimum la durée visit (sans transport) : si déjà trop long => pas possible
             if (s.getDuration() > remainingHours) continue;
 
+            // score = distance + prix + durée (pondérés)
             double score = siteScore(from, s);
 
-            // Un site très cher devient encore plus pénalisé si on priorise "cheap"
+            // option : si on veut vraiment "cheap", on pénalise plus le prix
             if (prioritizeCheap) {
-                score -= (s.getEntryPrice() * 2.0);
+                score += s.getEntryPrice() * 2.0;
             }
 
-            if (score > bestScore) {
+            if (score < bestScore) {
                 bestScore = score;
                 best = s;
             }
@@ -221,18 +332,25 @@ public class OfferBuilder {
         return best;
     }
 
+    /**
+     * Calcule un score simple pour comparer 2 sites.
+     * Ici : distance + prix + durée (pondérés).
+     * Plus petit => meilleur.
+     */
     private double siteScore(Coordinates from, Site s) {
         double dist = GeoUtils.distance(from, s.getCoordinates());
 
+        // Bonus si type préféré (optionnel)
         double typeBonus = 0.0;
         if (!preferredTypes.isEmpty() && preferredTypes.contains(s.getType())) {
             typeBonus = wType;
         }
 
-        // score = bonus type - pénalités distance/prix/durée
-        return typeBonus
-                - (wDistance * dist)
-                - (wEntry * s.getEntryPrice())
-                - (wDuration * s.getDuration());
+        // On garde la logique "plus petit = meilleur" :
+        // donc on soustrait le bonus (ça réduit le score)
+        return (wDistance * dist)
+                + (wEntry * s.getEntryPrice())
+                + (wDuration * s.getDuration())
+                - typeBonus;
     }
 }

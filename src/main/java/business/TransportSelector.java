@@ -1,12 +1,11 @@
 package business;
 
-/**
- * Classe métier qui choisit le meilleur moyen de transport
- * selon la distance et le budget restant.
- */
+import org.springframework.stereotype.Component;
+
+@Component
 public class TransportSelector {
 
-    public static Transport chooseTransport(
+    public Transport chooseTransport(
             Coordinates from,
             Coordinates to,
             double remainingBudget
@@ -26,12 +25,8 @@ public class TransportSelector {
             double cost = distance * transport.getPricePerKm();
             double duration = distance / transport.getSpeedKmH();
 
-            // si le coût dépasse le budget, on ignore ce transport
-            if (cost > remainingBudget) {
-                continue;
-            }
+            if (cost > remainingBudget) continue;
 
-            // score simple : coût + durée pondérée
             double score = cost + (duration * 5);
 
             if (score < bestScore) {
@@ -39,7 +34,6 @@ public class TransportSelector {
                 bestTransport = transport;
             }
         }
-
         return bestTransport;
     }
 }
