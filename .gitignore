@@ -1,15 +1,19 @@
-# ===== Eclipse =====
+# ===== Eclipse / IDE =====
 .project
 .classpath
 .settings/
 .metadata/
+.recommenders/
+.externalToolBuilders/
+.factorypath
 
 # ===== Build =====
 build/
 target/
 bin/
+*.class
 
-# ===== Servers / Tomcat =====
+# ===== Servers / Tomcat (Eclipse WTP) =====
 Servers/
 wtpwebapps/
 .runtime/
