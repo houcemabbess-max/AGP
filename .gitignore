@@ -1,0 +1,22 @@
+# ===== Eclipse =====
+.project
+.classpath
+.settings/
+.metadata/
+
+# ===== Build =====
+build/
+target/
+bin/
+
+# ===== Servers / Tomcat =====
+Servers/
+wtpwebapps/
+.runtime/
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+
+# ===== Logs =====
+*.log
