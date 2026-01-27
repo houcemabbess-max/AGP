@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+<h:head>
+    <title>Recherche - AGP Réunion</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+          rel="stylesheet"/>
+
+    <style>
+        html, body { height: 100%; margin: 0; }
+        body{
+            background-image:
+                linear-gradient(rgba(0,0,0,.62), rgba(0,0,0,.62)),
+                url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&amp;fit=crop&amp;w=1920&amp;q=80');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: #fff;
+        }
+        .page-wrap{ min-height:100vh; display:flex; align-items:center; padding: 40px 0; }
+        .glass{
+            background: rgba(255,255,255,.12);
+            border: 1px solid rgba(255,255,255,.18);
+            backdrop-filter: blur(10px);
+            border-radius: 18px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.35);
+        }
+        .btn-orange{
+            background:#ff7a00; border-color:#ff7a00; color:#fff; font-weight:700;
+        }
+        .btn-orange:hover{ background:#ff9a2f; border-color:#ff9a2f; color:#fff; }
+        .btn-main{ padding: 14px 28px; border-radius: 999px; font-size: 1.05rem; }
+        .form-label{ font-weight:600; }
+    </style>
+</h:head>
+
+<h:body>
+
+<div class="container page-wrap">
+    <div class="row justify-content-center w-100">
+        <div class="col-12 col-lg-8 col-xl-7">
+
+            <div class="mb-4 text-center">
+                <h1 class="display-5 fw-bold">Recherche d’informations touristiques</h1>
+                <p class="lead text-white-50 mb-0">
+                    Choisis un type de recherche et sa valeur (site, hôtel, étoiles...).
+                </p>
+            </div>
+
+            <div class="glass p-4 p-md-5">
+
+                <!-- FORM -->
+                <h:form id="searchForm">
+
+                    <div class="row g-3">
+
+                        <div class="col-12 col-md-6">
+                            <h:outputLabel for="type" styleClass="form-label">Type de recherche</h:outputLabel>
+
+                            <!-- Si tu as déjà un bean SearchBean, remplace value="#{searchBean.type}" -->
+                            <h:selectOneMenu id="type" styleClass="form-select"
+                                             value="#{searchBean.type}">
+                                <f:selectItem itemLabel="-- Choisir --" itemValue="" noSelectionOption="true"/>
+                                <f:selectItem itemLabel="Site (mot-clé)" itemValue="site"/>
+                                <f:selectItem itemLabel="Hôtel (nom)" itemValue="hotel"/>
+                                <f:selectItem itemLabel="Nombre d’étoiles" itemValue="stars"/>
+                            </h:selectOneMenu>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <h:outputLabel for="value" styleClass="form-label">Valeur</h:outputLabel>
+                            <h:inputText id="value" styleClass="form-control"
+                                         value="#{searchBean.value}"
+                                         placeholder="Ex: volcan, Saint-Gilles, 4"/>
+                        </div>
+
+                        <div class="col-12 d-flex gap-3 flex-wrap mt-2">
+                            <h:commandButton value="🔍 Rechercher"
+                                             action="#{searchBean.search}"
+                                             styleClass="btn btn-orange btn-main"/>
+
+                            <h:commandButton value="↩ Réinitialiser"
+                                             action="#{searchBean.reset}"
+                                             immediate="true"
+                                             styleClass="btn btn-outline-light btn-main"/>
+                        </div>
+
+                        <div class="col-12 mt-3">
+                            <h:messages styleClass="text-warning fw-semibold"/>
+                        </div>
+
+                    </div>
+
+                    <hr class="border border-light border-opacity-25 my-4"/>
+
+                    <!-- RESULTS -->
+                    <h2 class="h4 fw-bold mb-3">Résultats</h2>
+
+                    <div class="text-white-50">
+                        <!-- Adapte si tu as une liste searchBean.results -->
+                        <h:panelGroup rendered="#{empty searchBean.results}">
+                            Aucun résultat pour le moment.
+                        </h:panelGroup>
+
+                        <h:dataTable value="#{searchBean.results}" var="r"
+                                     rendered="#{not empty searchBean.results}"
+                                     styleClass="table table-dark table-striped table-hover align-middle mt-3">
+                            <h:column>
+                                <f:facet name="header">Nom</f:facet>
+                                #{r}
+                            </h:column>
+                        </h:dataTable>
+                    </div>
+
+                </h:form>
+
+                <div class="text-center mt-4">
+                    <h:link outcome="index.xhtml" styleClass="btn btn-outline-light btn-main">
+                        ⬅ Retour à l’accueil
+                    </h:link>
+                    <h:link outcome="offer.xhtml" styleClass="btn btn-orange btn-main ms-2">
+                        ⚡ Aller aux offres
+                    </h:link>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</h:body>
+</html>

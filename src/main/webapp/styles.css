@@ -1,0 +1,133 @@
+body { margin:0; font-family: Arial; background:#f7f7f7; color:#111; }
+
+.page { min-height: 100vh; }
+
+.hero {
+  background: #111;
+  color: white;
+  padding: 44px 20px;
+}
+
+.hero-content {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.hero h1 { margin:0 0 10px 0; font-size: 44px; }
+.hero p { margin:0 0 18px 0; opacity: 0.9; line-height: 1.4; }
+
+.hero-actions { display:flex; gap:12px; flex-wrap: wrap; }
+
+.btn-primary, .btn-secondary, .link-btn {
+  display:inline-block;
+  padding: 10px 14px;
+  border-radius: 10px;
+  text-decoration:none;
+  font-weight: 600;
+}
+
+.btn-primary { background:#ffffff; color:#111; }
+.btn-secondary { border:1px solid #fff; color:#fff; }
+
+.container { max-width: 980px; margin: 18px auto; padding: 0 16px; }
+
+.grid {
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.card {
+  background:#fff;
+  border:1px solid #e6e6e6;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.card h2 { margin-top: 0; }
+.card ul { margin: 10px 0 0 18px; }
+
+.link-btn {
+  margin-top: 12px;
+  border: 1px solid #111;
+  color:#111;
+}
+
+.footer {
+  margin: 18px 0 24px 0;
+  color:#666;
+  font-size: 14px;
+}
+
+@media (max-width: 800px) {
+  .grid { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 34px; }
+  /* ===== BACKGROUND GLOBAL ===== */
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: url("#{resource['img/hero-reunion.jpg']}") no-repeat center center fixed;
+    background-size: cover;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* Overlay sombre pour lisibilité */
+.page-overlay {
+    min-height: 100vh;
+    background: rgba(0, 0, 0, 0.55);
+}
+
+/* ===== HERO CONTENT ===== */
+.hero-content {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+}
+
+.hero-box {
+    color: #fff;
+    max-width: 900px;
+}
+
+/* ===== BOUTONS UNIFIÉS ===== */
+.btn-main {
+    padding: 14px 28px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    transition: all 0.25s ease;
+}
+
+.btn-main-primary {
+    background: #ff7a18;
+    color: #fff;
+    border: none;
+}
+
+.btn-main-primary:hover {
+    background: #ff8f3a;
+    transform: translateY(-2px);
+}
+
+.btn-main-outline {
+    background: transparent;
+    color: #fff;
+    border: 2px solid #fff;
+}
+
+.btn-main-outline:hover {
+    background: #fff;
+    color: #000;
+    transform: translateY(-2px);
+}
+
+/* Pills */
+.hero-tags span {
+    background: rgba(255,255,255,0.9);
+    color: #000;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-weight: 500;
+}
+  
+}

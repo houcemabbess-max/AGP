@@ -1,0 +1,51 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/templates/layout.xhtml">
+
+    <ui:define name="title">Détails - AGP Réunion</ui:define>
+
+    <ui:define name="content">
+        <section class="section">
+            <div class="container">
+
+                <h2 class="section-title">Détails</h2>
+
+                <p:panel styleClass="card">
+
+                    <h:panelGroup rendered="#{not empty entryBean.selected}">
+
+                        <h:graphicImage library="img"
+                                        name="#{entryBean.selected.image}"
+                                        style="width:100%;border-radius:18px;" />
+
+                        <div style="padding:14px;">
+                            <div class="badges" style="margin-top:10px;">
+                                <span class="badge primary">#{entryBean.selected.badge}</span>
+                                <span class="badge green">#{entryBean.selected.zone}</span>
+                            </div>
+
+                            <h2 style="margin:10px 0 6px 0;">#{entryBean.selected.title}</h2>
+                            <p style="color:#64748b;line-height:1.6;">#{entryBean.selected.description}</p>
+
+                            <div style="margin-top:14px;">
+                                <h:link value="← Retour" outcome="search.xhtml" styleClass="btn btn-outline"/>
+                                <h:link value="Accueil" outcome="index.xhtml" styleClass="btn btn-primary"/>
+                            </div>
+                        </div>
+
+                    </h:panelGroup>
+
+                    <h:panelGroup rendered="#{empty entryBean.selected}">
+                        <p style="color:#64748b;">Aucun élément sélectionné.</p>
+                        <h:link value="Accueil" outcome="index.xhtml" styleClass="btn btn-primary"/>
+                    </h:panelGroup>
+
+                </p:panel>
+
+            </div>
+        </section>
+    </ui:define>
+
+</ui:composition>

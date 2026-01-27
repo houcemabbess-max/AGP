@@ -1,26 +1,21 @@
-# ===== Eclipse / IDE =====
-.project
+# ===== BUILD =====
+/build/
+/target/
+
+# ===== IDE =====
 .classpath
+.project
 .settings/
-.metadata/
-.recommenders/
-.externalToolBuilders/
-.factorypath
+.idea/
+*.iml
 
-# ===== Build =====
-build/
-target/
-bin/
-*.class
-
-# ===== Servers / Tomcat (Eclipse WTP) =====
-Servers/
-wtpwebapps/
-.runtime/
+# ===== SERVERS =====
+/Servers/
 
 # ===== OS =====
+desktop.ini
 .DS_Store
 Thumbs.db
 
-# ===== Logs =====
-*.log
+# ===== BACKUP =====
+backup_local/

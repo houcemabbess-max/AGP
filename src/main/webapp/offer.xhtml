@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+<h:head>
+    <title>Offres - AGP Réunion</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+          rel="stylesheet"/>
+
+    <style>
+        html, body { height: 100%; margin: 0; }
+        body{
+            background-image:
+                linear-gradient(rgba(0,0,0,.62), rgba(0,0,0,.62)),
+                url('https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&amp;fit=crop&amp;w=1920&amp;q=80');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: #fff;
+        }
+        .page-wrap{ min-height:100vh; display:flex; align-items:center; padding: 40px 0; }
+        .glass{
+            background: rgba(255,255,255,.12);
+            border: 1px solid rgba(255,255,255,.18);
+            backdrop-filter: blur(10px);
+            border-radius: 18px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.35);
+        }
+        .btn-orange{
+            background:#ff7a00; border-color:#ff7a00; color:#fff; font-weight:700;
+        }
+        .btn-orange:hover{ background:#ff9a2f; border-color:#ff9a2f; color:#fff; }
+        .btn-main{ padding: 14px 28px; border-radius: 999px; font-size: 1.05rem; }
+        .form-label{ font-weight:600; }
+        .hint{ color: rgba(255,255,255,.7); font-size:.95rem; }
+    </style>
+</h:head>
+
+<h:body>
+
+<div class="container page-wrap">
+    <div class="row justify-content-center w-100">
+        <div class="col-12 col-lg-9 col-xl-8">
+
+            <div class="mb-4 text-center">
+                <h1 class="display-5 fw-bold">Construire des offres</h1>
+                <p class="lead text-white-50 mb-0">
+                    Choisis tes critères (durée, budget, confort, mot-clé) puis lance la génération.
+                </p>
+            </div>
+
+            <div class="glass p-4 p-md-5">
+
+                <h:form id="offerForm">
+
+                    <div class="row g-3">
+
+                        <div class="col-12 col-md-4">
+                            <h:outputLabel for="days" styleClass="form-label">Nombre de jours</h:outputLabel>
+                            <h:inputText id="days" styleClass="form-control"
+                                         value="#{offerBean.nbDays}"
+                                         placeholder="Ex : 7"/>
+                            <div class="hint mt-1">Laisse vide si tu n’as pas encore décidé.</div>
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            <h:outputLabel for="min" styleClass="form-label">Budget min (€)</h:outputLabel>
+                            <h:inputText id="min" styleClass="form-control"
+                                         value="#{offerBean.minPrice}"
+                                         placeholder="Ex : 400"/>
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            <h:outputLabel for="max" styleClass="form-label">Budget max (€)</h:outputLabel>
+                            <h:inputText id="max" styleClass="form-control"
+                                         value="#{offerBean.maxPrice}"
+                                         placeholder="Ex : 1200"/>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <h:outputLabel for="comfort" styleClass="form-label">Confort / rythme</h:outputLabel>
+                            <h:selectOneMenu id="comfort" styleClass="form-select"
+                                             value="#{offerBean.comfort}">
+                                <f:selectItem itemLabel="-- Choisir --" itemValue="" noSelectionOption="true"/>
+                                <f:selectItem itemLabel="Économique" itemValue="eco"/>
+                                <f:selectItem itemLabel="Standard" itemValue="std"/>
+                                <f:selectItem itemLabel="Confort" itemValue="comfort"/>
+                            </h:selectOneMenu>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <h:outputLabel for="keyword" styleClass="form-label">Mot-clé (site)</h:outputLabel>
+                            <h:inputText id="keyword" styleClass="form-control"
+                                         value="#{offerBean.descriptionSite}"
+                                         placeholder="Ex : volcan, cascade, lagon"/>
+                        </div>
+
+                        <div class="col-12 d-flex gap-3 flex-wrap mt-2">
+                            <h:commandButton value="⚡ Construire des offres"
+                                             action="#{offerBean.buildOffers}"
+                                             styleClass="btn btn-orange btn-main"/>
+
+                            <!-- reset fiable -->
+                            <h:commandButton value="↩ Réinitialiser"
+                                             action="#{offerBean.reset}"
+                                             immediate="true"
+                                             styleClass="btn btn-outline-light btn-main"/>
+                        </div>
+
+                        <div class="col-12 mt-3">
+                            <h:messages styleClass="text-warning fw-semibold"/>
+                        </div>
+
+                    </div>
+
+                    <hr class="border border-light border-opacity-25 my-4"/>
+
+                    <h2 class="h4 fw-bold mb-3">Offres proposées</h2>
+
+                    <h:panelGroup rendered="#{empty offerBean.offers}">
+                        <div class="text-white-50">
+                            Aucune offre générée pour le moment.
+                        </div>
+                    </h:panelGroup>
+
+                    <h:dataTable value="#{offerBean.offers}" var="o"
+                                 rendered="#{not empty offerBean.offers}"
+                                 styleClass="table table-dark table-striped table-hover align-middle mt-3">
+                        <h:column>
+                            <f:facet name="header">Offre</f:facet>
+                            #{o}
+                        </h:column>
+                    </h:dataTable>
+
+                </h:form>
+
+                <div class="text-center mt-4">
+                    <h:link outcome="index.xhtml" styleClass="btn btn-outline-light btn-main">
+                        ⬅ Retour à l’accueil
+                    </h:link>
+                    <h:link outcome="search.xhtml" styleClass="btn btn-orange btn-main ms-2">
+                        🔍 Aller à la recherche
+                    </h:link>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</h:body>
+</html>

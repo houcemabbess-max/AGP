@@ -1,0 +1,45 @@
+/* FULLSCREEN BACKGROUND IMAGE */
+.bg-photo {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transform: scale(1.05);
+}
+
+/* DARK OVERLAY FOR READABILITY */
+.bg-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(
+        rgba(0, 0, 0, 0.55),
+        rgba(0, 0, 0, 0.65)
+    );
+}
+
+/* ORANGE ISLAND BUTTON */
+.btn-orange {
+    background-color: #ff7a00;
+    border-color: #ff7a00;
+    color: white;
+    font-weight: 700;
+}
+
+.btn-orange:hover {
+    background-color: #ff9a2f;
+    border-color: #ff9a2f;
+    color: white;
+}
+
+/* SAME SIZE BUTTONS */
+.btn-action {
+    min-width: 320px;
+}
+
+/* REMOVE WHITE BACKGROUND */
+body {
+    background: transparent;
+}
