@@ -14,7 +14,7 @@
         body{
             background-image:
                 linear-gradient(rgba(0,0,0,.62), rgba(0,0,0,.62)),
-                url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&amp;fit=crop&amp;w=1920&amp;q=80');
+                url('https://images.unsplash.com/photo-1526481280695-3c687fd643ed?auto=format&amp;fit=crop&amp;w=1920&amp;q=80');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -32,105 +32,155 @@
             background:#ff7a00; border-color:#ff7a00; color:#fff; font-weight:700;
         }
         .btn-orange:hover{ background:#ff9a2f; border-color:#ff9a2f; color:#fff; }
-        .btn-main{ padding: 14px 28px; border-radius: 999px; font-size: 1.05rem; }
-        .form-label{ font-weight:600; }
+        .btn-main{ min-width: 220px; }
+        .hint{ color: rgba(255,255,255,.75); font-size: .92rem; }
     </style>
 </h:head>
 
 <h:body>
-
-<div class="container page-wrap">
-    <div class="row justify-content-center w-100">
-        <div class="col-12 col-lg-8 col-xl-7">
-
-            <div class="mb-4 text-center">
+    <div class="page-wrap">
+        <div class="container">
+            <div class="text-center mb-4">
                 <h1 class="display-5 fw-bold">Recherche d’informations touristiques</h1>
-                <p class="lead text-white-50 mb-0">
-                    Choisis un type de recherche et sa valeur (site, hôtel, étoiles...).
-                </p>
+                <div class="hint">Choisis un type de recherche et ses critères (site ou hôtel).</div>
             </div>
 
-            <div class="glass p-4 p-md-5">
+            <div class="glass p-4 p-md-5 mx-auto" style="max-width: 900px;">
+                <h:form>
 
-                <!-- FORM -->
-                <h:form id="searchForm">
+                    <h:messages styleClass="text-warning fw-semibold" />
 
-                    <div class="row g-3">
+                    <div class="row g-3 align-items-end">
 
+                        <!-- TYPE RECHERCHE -->
                         <div class="col-12 col-md-6">
-                            <h:outputLabel for="type" styleClass="form-label">Type de recherche</h:outputLabel>
+                            <h:outputLabel for="typeR" styleClass="form-label">Type de recherche</h:outputLabel>
 
-                            <!-- Si tu as déjà un bean SearchBean, remplace value="#{searchBean.type}" -->
-                            <h:selectOneMenu id="type" styleClass="form-select"
-                                             value="#{searchBean.type}">
+                            <h:selectOneMenu id="typeR" styleClass="form-select"
+                                             value="#{searchBean.typeRecherche}">
                                 <f:selectItem itemLabel="-- Choisir --" itemValue="" noSelectionOption="true"/>
-                                <f:selectItem itemLabel="Site (mot-clé)" itemValue="site"/>
-                                <f:selectItem itemLabel="Hôtel (nom)" itemValue="hotel"/>
-                                <f:selectItem itemLabel="Nombre d’étoiles" itemValue="stars"/>
+                                <f:selectItem itemLabel="Site" itemValue="SITE"/>
+                                <f:selectItem itemLabel="Hôtel" itemValue="HOTEL"/>
+                                <f:ajax render="blocSite blocHotel" />
                             </h:selectOneMenu>
                         </div>
 
-                        <div class="col-12 col-md-6">
-                            <h:outputLabel for="value" styleClass="form-label">Valeur</h:outputLabel>
-                            <h:inputText id="value" styleClass="form-control"
-                                         value="#{searchBean.value}"
-                                         placeholder="Ex: volcan, Saint-Gilles, 4"/>
-                        </div>
-
-                        <div class="col-12 d-flex gap-3 flex-wrap mt-2">
-                            <h:commandButton value="🔍 Rechercher"
-                                             action="#{searchBean.search}"
-                                             styleClass="btn btn-orange btn-main"/>
-
-                            <h:commandButton value="↩ Réinitialiser"
-                                             action="#{searchBean.reset}"
-                                             immediate="true"
-                                             styleClass="btn btn-outline-light btn-main"/>
-                        </div>
-
-                        <div class="col-12 mt-3">
-                            <h:messages styleClass="text-warning fw-semibold"/>
-                        </div>
-
-                    </div>
-
-                    <hr class="border border-light border-opacity-25 my-4"/>
-
-                    <!-- RESULTS -->
-                    <h2 class="h4 fw-bold mb-3">Résultats</h2>
-
-                    <div class="text-white-50">
-                        <!-- Adapte si tu as une liste searchBean.results -->
-                        <h:panelGroup rendered="#{empty searchBean.results}">
-                            Aucun résultat pour le moment.
+                        <!-- ======= SITE ======= -->
+                        <h:panelGroup id="blocSite" layout="block"
+                                      styleClass="col-12 col-md-6"
+                                      rendered="#{searchBean.typeRecherche eq 'SITE'}">
+                            <h:outputLabel for="motcle" styleClass="form-label">Mot-clé (site)</h:outputLabel>
+                            <h:inputText id="motcle" styleClass="form-control"
+                                         value="#{searchBean.motCleSite}"
+                                         placeholder="Ex: volcan, plage, randonnée"/>
                         </h:panelGroup>
 
-                        <h:dataTable value="#{searchBean.results}" var="r"
-                                     rendered="#{not empty searchBean.results}"
-                                     styleClass="table table-dark table-striped table-hover align-middle mt-3">
-                            <h:column>
-                                <f:facet name="header">Nom</f:facet>
-                                #{r}
-                            </h:column>
-                        </h:dataTable>
+                        <!-- ======= HOTEL ======= -->
+                        <h:panelGroup id="blocHotel" layout="block"
+                                      styleClass="col-12"
+                                      rendered="#{searchBean.typeRecherche eq 'HOTEL'}">
+
+                            <div class="row g-3 align-items-end">
+
+                                <!-- Critère hôtel -->
+                                <div class="col-12 col-md-6">
+                                    <h:outputLabel for="crit" styleClass="form-label">Critère hôtel</h:outputLabel>
+                                    <h:selectOneMenu id="crit" styleClass="form-select"
+                                                     value="#{searchBean.critereHotel}">
+                                        <f:selectItem itemLabel="-- Choisir --" itemValue="" noSelectionOption="true"/>
+                                        <f:selectItem itemLabel="Nom" itemValue="NOM"/>
+                                        <f:selectItem itemLabel="Nombre d’étoiles" itemValue="ETOILES"/>
+                                        <f:selectItem itemLabel="Prix / nuit" itemValue="PRIX"/>
+                                        <f:ajax render="hotelNom hotelStars hotelPrix" />
+                                    </h:selectOneMenu>
+                                </div>
+
+                                <!-- Nom hôtel -->
+                                <h:panelGroup id="hotelNom" layout="block"
+                                              styleClass="col-12 col-md-6"
+                                              rendered="#{searchBean.critereHotel eq 'NOM'}">
+                                    <h:outputLabel for="hn" styleClass="form-label">Nom de l’hôtel</h:outputLabel>
+                                    <h:inputText id="hn" styleClass="form-control"
+                                                 value="#{searchBean.nomHotel}"
+                                                 placeholder="Ex : LUX*, Dina Morgabine..."/>
+                                </h:panelGroup>
+
+                                <!-- Étoiles -->
+                                <h:panelGroup id="hotelStars" layout="block"
+                                              styleClass="col-12 col-md-6"
+                                              rendered="#{searchBean.critereHotel eq 'ETOILES'}">
+                                    <h:outputLabel for="st" styleClass="form-label">Nombre d’étoiles</h:outputLabel>
+                                    <h:selectOneMenu id="st" styleClass="form-select"
+                                                     value="#{searchBean.etoiles}">
+                                        <f:selectItem itemLabel="-- Choisir --" itemValue="" noSelectionOption="true"/>
+                                        <f:selectItem itemLabel="1" itemValue="1"/>
+                                        <f:selectItem itemLabel="2" itemValue="2"/>
+                                        <f:selectItem itemLabel="3" itemValue="3"/>
+                                        <f:selectItem itemLabel="4" itemValue="4"/>
+                                        <f:selectItem itemLabel="5" itemValue="5"/>
+                                    </h:selectOneMenu>
+                                </h:panelGroup>
+
+                                <!-- Prix/nuit -->
+                                <h:panelGroup id="hotelPrix" layout="block"
+                                              styleClass="col-12"
+                                              rendered="#{searchBean.critereHotel eq 'PRIX'}">
+                                    <div class="row g-3">
+                                        <div class="col-12 col-md-6">
+                                            <h:outputLabel for="pmin" styleClass="form-label">Prix min / nuit (€)</h:outputLabel>
+                                            <h:inputText id="pmin" styleClass="form-control"
+                                                         value="#{searchBean.prixMinNuit}"
+                                                         placeholder="Ex : 80"/>
+                                        </div>
+                                        <div class="col-12 col-md-6">
+                                            <h:outputLabel for="pmax" styleClass="form-label">Prix max / nuit (€)</h:outputLabel>
+                                            <h:inputText id="pmax" styleClass="form-control"
+                                                         value="#{searchBean.prixMaxNuit}"
+                                                         placeholder="Ex : 200"/>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="hint">Tu peux saisir min seul, max seul, ou les deux (min ≤ max).</div>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+                            </div>
+                        </h:panelGroup>
+                    </div>
+
+                    <hr class="my-4" style="border-color: rgba(255,255,255,.25);" />
+
+                    <div class="d-flex gap-3 flex-wrap">
+                        <h:commandButton value="Rechercher"
+                                         action="#{searchBean.search}"
+                                         styleClass="btn btn-orange btn-main"/>
+                        <h:commandButton value="Réinitialiser"
+                                         action="#{searchBean.reset}"
+                                         immediate="true"
+                                         styleClass="btn btn-outline-light btn-main"/>
+                        <h:button outcome="offer" value="Aller aux offres" styleClass="btn btn-orange btn-main"/>
+                    </div>
+
+                    <div class="mt-4">
+                        <h3 class="h4 fw-bold">Résultats</h3>
+                        <div class="hint">Aucun résultat pour le moment.</div>
+
+                        <!-- Si tu veux afficher une liste quand tu branches DB -->
+                        <!--
+                        <ul class="mt-2">
+                            <ui:repeat value="#{searchBean.results}" var="r">
+                                <li>#{r}</li>
+                            </ui:repeat>
+                        </ul>
+                        -->
                     </div>
 
                 </h:form>
-
-                <div class="text-center mt-4">
-                    <h:link outcome="index.xhtml" styleClass="btn btn-outline-light btn-main">
-                        ⬅ Retour à l’accueil
-                    </h:link>
-                    <h:link outcome="offer.xhtml" styleClass="btn btn-orange btn-main ms-2">
-                        ⚡ Aller aux offres
-                    </h:link>
-                </div>
-
             </div>
 
+            <div class="text-center mt-4">
+                <h:button outcome="index" value="Retour à l’accueil" styleClass="btn btn-outline-light btn-main"/>
+            </div>
         </div>
     </div>
-</div>
-
 </h:body>
 </html>
