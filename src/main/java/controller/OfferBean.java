@@ -15,75 +15,51 @@ public class OfferBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    // ===== Champs formulaire (liés à offer.xhtml) =====
-    private Integer nbDays;          // Nombre de jours (optionnel)
-    private Integer minPrice;        // Budget min
-    private Integer maxPrice;        // Budget max
-    private String comfort;          // Confort / rythme
-    private String descriptionSite;  // Mot-clé (site)
+    // ===== Champs formulaire =====
+    private Integer nbDays;
+    private Integer minPrice;
+    private Integer maxPrice;
+    private String comfort;
+    private String descriptionSite;
 
     // ===== Résultats =====
     private final List<Object> offers = new ArrayList<>();
 
-    // ===== Actions =====
-
     /** Bouton "Construire des offres" */
     public void buildOffers() {
         offers.clear();
-        FacesContext context = FacesContext.getCurrentInstance();
 
-        // 1) Nombre de jours : optionnel, mais si rempli => >= 1
+        // nbDays optionnel, mais si rempli => > 0
         if (nbDays != null && nbDays <= 0) {
-            context.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Le nombre de jours doit être supérieur à 0.",
-                    null));
+            msg(FacesMessage.SEVERITY_ERROR, "Le nombre de jours doit être supérieur à 0.");
             return;
         }
 
-        // 2) Budgets : pas négatifs
+        // budgets optionnels, mais si remplis => >= 0
         if (minPrice != null && minPrice < 0) {
-            context.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Le budget minimum ne peut pas être négatif.",
-                    null));
+            msg(FacesMessage.SEVERITY_ERROR, "Le budget minimum ne peut pas être négatif.");
             return;
         }
 
         if (maxPrice != null && maxPrice < 0) {
-            context.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Le budget maximum ne peut pas être négatif.",
-                    null));
+            msg(FacesMessage.SEVERITY_ERROR, "Le budget maximum ne peut pas être négatif.");
             return;
         }
 
-        // 3) Règle demandée : budgetMin <= budgetMax
+        // règle demandée : min <= max
         if (minPrice != null && maxPrice != null && minPrice > maxPrice) {
-            context.addMessage(null, new FacesMessage(
-                    FacesMessage.SEVERITY_ERROR,
-                    "Le budget minimum doit être inférieur ou égal au budget maximum.",
-                    null));
+            msg(FacesMessage.SEVERITY_ERROR, "Le budget minimum doit être inférieur ou égal au budget maximum.");
             return;
         }
 
-        // (Optionnel) si tu veux rendre confort obligatoire, décommente :
-        // if (comfort == null || comfort.trim().isEmpty()) {
-        //     context.addMessage(null, new FacesMessage(
-        //             FacesMessage.SEVERITY_ERROR,
-        //             "Veuillez choisir un confort / rythme.",
-        //             null));
-        //     return;
-        // }
+        // (optionnel) confort peut être obligatoire ou non — je laisse optionnel
+        // if (comfort == null || comfort.trim().isEmpty()) { ... }
 
-        // ✅ Pour l’instant pas de DB / catalogue branché => on met juste un message
-        context.addMessage(null, new FacesMessage(
-                FacesMessage.SEVERITY_INFO,
-                "Critères validés. (Catalogue/DB non branché : aucune offre générée pour le moment.)",
-                null));
+        // DB pas branchée
+        msg(FacesMessage.SEVERITY_WARN, "Catalogue/DB non branché : aucune offre générée pour le moment.");
     }
 
-    /** Bouton "Réinitialiser" */
+    /** Bouton "Réinitialiser" (IMPORTANT : même nom que dans offer.xhtml) */
     public void reset() {
         nbDays = null;
         minPrice = null;
@@ -91,10 +67,15 @@ public class OfferBean implements Serializable {
         comfort = null;
         descriptionSite = null;
         offers.clear();
+
+        msg(FacesMessage.SEVERITY_INFO, "Formulaire réinitialisé.");
+    }
+
+    private void msg(FacesMessage.Severity sev, String text) {
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(sev, text, null));
     }
 
     // ===== Getters / Setters =====
-
     public Integer getNbDays() { return nbDays; }
     public void setNbDays(Integer nbDays) { this.nbDays = nbDays; }
 

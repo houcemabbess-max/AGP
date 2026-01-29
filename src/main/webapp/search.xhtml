@@ -14,7 +14,7 @@
         body{
             background-image:
                 linear-gradient(rgba(0,0,0,.62), rgba(0,0,0,.62)),
-                url('https://images.unsplash.com/photo-1526481280695-3c687fd643ed?auto=format&amp;fit=crop&amp;w=1920&amp;q=80');
+                url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&amp;fit=crop&amp;w=1920&amp;q=80');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -34,25 +34,31 @@
         .btn-orange:hover{ background:#ff9a2f; border-color:#ff9a2f; color:#fff; }
         .btn-main{ min-width: 220px; }
         .hint{ color: rgba(255,255,255,.75); font-size: .92rem; }
+        .form-label{ font-weight: 600; }
     </style>
 </h:head>
 
 <h:body>
-    <div class="page-wrap">
-        <div class="container">
-            <div class="text-center mb-4">
-                <h1 class="display-5 fw-bold">Recherche d’informations touristiques</h1>
-                <div class="hint">Choisis un type de recherche et ses critères (site ou hôtel).</div>
-            </div>
+<div class="page-wrap">
+    <div class="container">
+        <div class="text-center mb-4">
+            <h1 class="display-5 fw-bold">Recherche d’informations touristiques</h1>
+            <div class="hint">Choisis un type de recherche et ses critères (site ou hôtel).</div>
+        </div>
 
-            <div class="glass p-4 p-md-5 mx-auto" style="max-width: 900px;">
-                <h:form>
+        <div class="glass p-4 p-md-5 mx-auto" style="max-width: 900px;">
 
-                    <h:messages styleClass="text-warning fw-semibold" />
+            <!-- IMPORTANT : prependId=false pour éviter j_idt... compliqués -->
+            <h:form id="searchForm" prependId="false">
+
+                <h:messages styleClass="text-warning fw-semibold" />
+
+                <!-- ✅ CONTENEUR TOUJOURS PRESENT -->
+                <h:panelGroup id="zone" layout="block">
 
                     <div class="row g-3 align-items-end">
 
-                        <!-- TYPE RECHERCHE -->
+                        <!-- TYPE -->
                         <div class="col-12 col-md-6">
                             <h:outputLabel for="typeR" styleClass="form-label">Type de recherche</h:outputLabel>
 
@@ -61,12 +67,14 @@
                                 <f:selectItem itemLabel="-- Choisir --" itemValue="" noSelectionOption="true"/>
                                 <f:selectItem itemLabel="Site" itemValue="SITE"/>
                                 <f:selectItem itemLabel="Hôtel" itemValue="HOTEL"/>
-                                <f:ajax render="blocSite blocHotel" />
+
+                                <!-- ✅ On rerender seulement "zone" (toujours présent) -->
+                                <f:ajax render="zone" execute="@this"/>
                             </h:selectOneMenu>
                         </div>
 
-                        <!-- ======= SITE ======= -->
-                        <h:panelGroup id="blocSite" layout="block"
+                        <!-- ===== SITE ===== -->
+                        <h:panelGroup layout="block"
                                       styleClass="col-12 col-md-6"
                                       rendered="#{searchBean.typeRecherche eq 'SITE'}">
                             <h:outputLabel for="motcle" styleClass="form-label">Mot-clé (site)</h:outputLabel>
@@ -75,38 +83,40 @@
                                          placeholder="Ex: volcan, plage, randonnée"/>
                         </h:panelGroup>
 
-                        <!-- ======= HOTEL ======= -->
-                        <h:panelGroup id="blocHotel" layout="block"
+                        <!-- ===== HOTEL (critère) ===== -->
+                        <h:panelGroup layout="block"
                                       styleClass="col-12"
                                       rendered="#{searchBean.typeRecherche eq 'HOTEL'}">
 
                             <div class="row g-3 align-items-end">
 
-                                <!-- Critère hôtel -->
                                 <div class="col-12 col-md-6">
                                     <h:outputLabel for="crit" styleClass="form-label">Critère hôtel</h:outputLabel>
+
                                     <h:selectOneMenu id="crit" styleClass="form-select"
                                                      value="#{searchBean.critereHotel}">
                                         <f:selectItem itemLabel="-- Choisir --" itemValue="" noSelectionOption="true"/>
                                         <f:selectItem itemLabel="Nom" itemValue="NOM"/>
                                         <f:selectItem itemLabel="Nombre d’étoiles" itemValue="ETOILES"/>
                                         <f:selectItem itemLabel="Prix / nuit" itemValue="PRIX"/>
-                                        <f:ajax render="hotelNom hotelStars hotelPrix" />
+
+                                        <!-- ✅ Encore : on rerender seulement "zone" -->
+                                        <f:ajax render="zone" execute="@this"/>
                                     </h:selectOneMenu>
                                 </div>
 
-                                <!-- Nom hôtel -->
-                                <h:panelGroup id="hotelNom" layout="block"
+                                <!-- NOM -->
+                                <h:panelGroup layout="block"
                                               styleClass="col-12 col-md-6"
                                               rendered="#{searchBean.critereHotel eq 'NOM'}">
                                     <h:outputLabel for="hn" styleClass="form-label">Nom de l’hôtel</h:outputLabel>
                                     <h:inputText id="hn" styleClass="form-control"
                                                  value="#{searchBean.nomHotel}"
-                                                 placeholder="Ex : LUX*, Dina Morgabine..."/>
+                                                 placeholder="Ex: LUX*, Dina Morgabine..."/>
                                 </h:panelGroup>
 
-                                <!-- Étoiles -->
-                                <h:panelGroup id="hotelStars" layout="block"
+                                <!-- ETOILES -->
+                                <h:panelGroup layout="block"
                                               styleClass="col-12 col-md-6"
                                               rendered="#{searchBean.critereHotel eq 'ETOILES'}">
                                     <h:outputLabel for="st" styleClass="form-label">Nombre d’étoiles</h:outputLabel>
@@ -121,8 +131,8 @@
                                     </h:selectOneMenu>
                                 </h:panelGroup>
 
-                                <!-- Prix/nuit -->
-                                <h:panelGroup id="hotelPrix" layout="block"
+                                <!-- PRIX -->
+                                <h:panelGroup layout="block"
                                               styleClass="col-12"
                                               rendered="#{searchBean.critereHotel eq 'PRIX'}">
                                     <div class="row g-3">
@@ -143,44 +153,47 @@
                                         </div>
                                     </div>
                                 </h:panelGroup>
+
                             </div>
                         </h:panelGroup>
+
                     </div>
+                </h:panelGroup>
 
-                    <hr class="my-4" style="border-color: rgba(255,255,255,.25);" />
+                <hr class="my-4" style="border-color: rgba(255,255,255,.25);" />
 
-                    <div class="d-flex gap-3 flex-wrap">
-                        <h:commandButton value="Rechercher"
-                                         action="#{searchBean.search}"
-                                         styleClass="btn btn-orange btn-main"/>
-                        <h:commandButton value="Réinitialiser"
-                                         action="#{searchBean.reset}"
-                                         immediate="true"
-                                         styleClass="btn btn-outline-light btn-main"/>
-                        <h:button outcome="offer" value="Aller aux offres" styleClass="btn btn-orange btn-main"/>
-                    </div>
+                <div class="d-flex gap-3 flex-wrap">
+                    <h:commandButton value="Rechercher"
+                                     action="#{searchBean.rechercher}"
+                                     styleClass="btn btn-orange btn-main"/>
 
-                    <div class="mt-4">
-                        <h3 class="h4 fw-bold">Résultats</h3>
-                        <div class="hint">Aucun résultat pour le moment.</div>
+                    <h:commandButton value="Réinitialiser"
+                                     action="#{searchBean.reset}"
+                                     immediate="true"
+                                     styleClass="btn btn-outline-light btn-main">
+                        <!-- ✅ resetValues vide les valeurs locales JSF -->
+                        <f:ajax execute="@this" render="zone" resetValues="true"/>
+                    </h:commandButton>
 
-                        <!-- Si tu veux afficher une liste quand tu branches DB -->
-                        <!--
-                        <ul class="mt-2">
-                            <ui:repeat value="#{searchBean.results}" var="r">
-                                <li>#{r}</li>
-                            </ui:repeat>
-                        </ul>
-                        -->
-                    </div>
+                    <h:button outcome="offer.xhtml" value="Aller aux offres"
+                              styleClass="btn btn-orange btn-main"/>
+                </div>
 
-                </h:form>
-            </div>
+                <div class="mt-4">
+                    <h3 class="h4 fw-bold">Résultats</h3>
+                    <div class="hint">Aucun résultat pour le moment.</div>
+                </div>
 
-            <div class="text-center mt-4">
-                <h:button outcome="index" value="Retour à l’accueil" styleClass="btn btn-outline-light btn-main"/>
-            </div>
+            </h:form>
+
         </div>
+
+        <div class="text-center mt-4">
+            <h:button outcome="index.xhtml" value="Retour à l’accueil"
+                      styleClass="btn btn-outline-light btn-main"/>
+        </div>
+
     </div>
+</div>
 </h:body>
 </html>

@@ -102,11 +102,13 @@
                                              action="#{offerBean.buildOffers}"
                                              styleClass="btn btn-orange btn-main"/>
 
-                            <!-- reset fiable -->
+                            <!-- ✅ RESET FIABLE -->
                             <h:commandButton value=" Réinitialiser"
                                              action="#{offerBean.reset}"
                                              immediate="true"
-                                             styleClass="btn btn-outline-light btn-main"/>
+                                             styleClass="btn btn-outline-light btn-main">
+                                <f:ajax execute="@this" render="@form" resetValues="true"/>
+                            </h:commandButton>
                         </div>
 
                         <div class="col-12 mt-3">
