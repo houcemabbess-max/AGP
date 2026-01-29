@@ -1,39 +1,57 @@
 package business;
 
-import org.springframework.stereotype.Component;
+import java.util.List;
 
-@Component
+/**
+ * TransportSelector :
+ * Choisit le meilleur transport selon distance, coût et durée.
+ *
+ * Spring (XML) :
+ * - Spring crée cet objet (bean)
+ * - La liste des transports est injectée via setTransports(...)
+ */
 public class TransportSelector {
 
-    public Transport chooseTransport(
-            Coordinates from,
-            Coordinates to,
-            double remainingBudget
-    ) {
+    // Liste injectée par Spring (Bus, Boat, OnFoot...)
+    private List<Transport> transports;
+
+    // Constructeur vide (utilisé par Spring)
+    public TransportSelector() {
+    }
+
+    // Setter utilisé dans applicationContext.xml
+    public void setTransports(List<Transport> transports) {
+        this.transports = transports;
+    }
+
+    public Transport chooseTransport(Coordinates from, Coordinates to, double remainingBudget) {
+
+        // Sécurité : si l'injection n'a pas été faite
+        if (transports == null || transports.isEmpty()) {
+            throw new IllegalStateException("Liste des transports non injectée par Spring.");
+        }
+
         double distance = GeoUtils.distance(from, to);
 
-        Transport bestTransport = new OnFoot();
+        Transport best = null;
         double bestScore = Double.MAX_VALUE;
 
-        Transport[] transports = {
-                new Bus(),
-                new OnFoot(),
-                new Boat()
-        };
-
-        for (Transport transport : transports) {
-            double cost = distance * transport.getPricePerKm();
-            double duration = distance / transport.getSpeedKmH();
+        for (Transport t : transports) {
+            double cost = distance * t.getPricePerKm();
+            double duration = distance / t.getSpeedKmH();
 
             if (cost > remainingBudget) continue;
 
-            double score = cost + (duration * 5);
+            double score = cost + duration * 5;
 
             if (score < bestScore) {
                 bestScore = score;
-                bestTransport = transport;
+                best = t;
             }
         }
-        return bestTransport;
+
+        return best;
     }
 }
+
+

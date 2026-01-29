@@ -19,3 +19,4 @@ Thumbs.db
 
 # ===== BACKUP =====
 backup_local/
+/bin/
